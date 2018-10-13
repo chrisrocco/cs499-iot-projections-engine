@@ -1,6 +1,7 @@
-import express from 'express';
-import { Subject } from 'rxjs';
-import { finished } from 'stream';
+import express from 'express'
+import {Subject} from 'rxjs'
+const cors = require('cors')
+
 
 
 export const API = (DB, eventStore) => {
@@ -9,6 +10,7 @@ export const API = (DB, eventStore) => {
 
     const app = express()
     app.use(express.json())
+    app.use(cors())
 
 
     /**
