@@ -14,7 +14,7 @@ export const API = (DB, eventStore) => {
 
 
     /**
-     * Endpoints for Ingesting Device Data
+     * Endpoints for ingesting device events
      * ==============================================
      */
     app.post('/ingest/device-event', (req, res) => {
@@ -43,6 +43,8 @@ export const API = (DB, eventStore) => {
         return res.json({ id, command })
     })
 
+
+    // Module exports
     return {
         events$,
         app

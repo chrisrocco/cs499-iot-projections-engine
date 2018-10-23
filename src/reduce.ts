@@ -2,11 +2,13 @@ import { DeviceDocument } from "./database/types";
 
 export const reduceDeviceEvent = (document: DeviceDocument, event: AggregateEvent) => {
 
+    // Set the state in the projection to the reported state of the device
     if(event.key === 'state') {
         document.actual_state = event.payload
         return document
     }
 
+    // Make a new document with this initial state
     if(event.key === 'created') {
         return {
             device_id: event.aggregate_id,
