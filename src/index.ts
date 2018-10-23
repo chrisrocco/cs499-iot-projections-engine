@@ -1,16 +1,20 @@
 import axios from 'axios';
+import { tap } from 'rxjs/operators';
 import { API } from './api';
-import { Collection } from './database/collection';
-import { DocumentChangeEvent } from './database/types';
-import { reduceDeviceEvent } from './reduce';
+import { Database } from './core/Database';
+import { DevicesProjection, ProjectionUpdated } from './DevicesProjection';
+
 
 // Setup simple state management strategy
-let DB = Collection('projections')
-let eventStore = Collection('events')
+let eventStore = Database()
+
+
+// Init home projection
+let deviceProjection = DevicesProjection()
 
 
 // Whenever our projection changes, publish an event to Node-Red
-DB.changes$.subscribe((change: DocumentChangeEvent) => {
+deviceProjection.output$.subscribe((change: ProjectionUpdated) => {
     let changeEndpoint = 'http://localhost:1880/projection-changes'
     axios.post(changeEndpoint, change)
         .then(() => null).catch(console.error.bind(null, "Could not publish change event"))
@@ -18,23 +22,20 @@ DB.changes$.subscribe((change: DocumentChangeEvent) => {
 
 
 // Launch an HTTP API to consume inbound Aggregate Events
-let httpServer = API(DB, eventStore)
-httpServer.events$.subscribe((event: AggregateEvent) => {
+let httpServer = API(deviceProjection, eventStore)
+httpServer
+    .deviceEvents$
+    .pipe(
+        // pipe into device projections modules
+        tap(event => deviceProjection.input$.next(event)),
 
-    // ignore events (except created) for devices we have not yet created
-    if(!DB.find(event.aggregate_id) && event.key !== 'created') 
-        return
-
-    // Update the projection
-    DB.update(event.aggregate_id, document => reduceDeviceEvent(document, event))
-
-    // Source Event
-    eventStore.update(event.aggregate_id, document => {
-        let d = document || []
-        d.push(event)
-        return d
-    })
-})
+        // save the event in database
+        tap(event => {
+            let id = event.aggregate_id
+            eventStore.insert(`aggregates.${id}.events`, event)
+        })
+    )
+    .subscribe()
 
 // Start the server process
 httpServer.app.listen(7000)
