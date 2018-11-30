@@ -4,6 +4,8 @@ import { API } from './api';
 import { Database } from './core/Database';
 import { DevicesProjection, ProjectionUpdated } from './DevicesProjection';
 
+require('dotenv').config()
+const {env} = process
 
 // Setup simple state management strategy
 let eventStore = Database()
@@ -15,7 +17,7 @@ let deviceProjection = DevicesProjection()
 
 // Whenever our projection changes, publish an event to Node-Red
 deviceProjection.output$.subscribe((change: ProjectionUpdated) => {
-    let changeEndpoint = 'http://localhost:1880/projection-changes'
+    let changeEndpoint = `${env.NODE_RED}/projection-changes`
     axios.post(changeEndpoint, change)
         .then(() => null).catch(console.error.bind(null, "Could not publish change event"))
 })
