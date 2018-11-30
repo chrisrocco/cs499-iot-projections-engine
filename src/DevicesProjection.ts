@@ -53,8 +53,6 @@ export const reducer = (state: DeviceProjection, event: AggregateEvent): DeviceP
         }
     }
 
-    console.log(event)
-
     // Otherwise, just sum up any usage data that may be in this event
     let { usage } = state.state.projected
     let { payload } = event

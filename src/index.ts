@@ -38,4 +38,4 @@ httpServer
     .subscribe()
 
 // Start the server process
-httpServer.app.listen(7000)
+httpServer.app.listen(process.env.PORT || 7000)
