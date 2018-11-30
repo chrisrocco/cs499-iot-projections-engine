@@ -4,8 +4,10 @@ import { API } from './api';
 import { Database } from './core/Database';
 import { DevicesProjection, ProjectionUpdated } from './DevicesProjection';
 
+// load environment
 require('dotenv').config()
 const {env} = process
+
 
 // Setup simple state management strategy
 let eventStore = Database()
@@ -38,6 +40,7 @@ httpServer
         })
     )
     .subscribe()
+
 
 // Start the server process
 httpServer.app.listen(process.env.PORT || 7000)
